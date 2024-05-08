@@ -386,13 +386,15 @@ CenterBottomRightX=0.9*ReferanceCorner(1);
 CenterBottomRightY=0.8*ReferanceCorner(2);
 if EphysObj.Variables.DisplayPlot
     figure
+    subplot(1,2,1)
 scatter(CenterBottomRightX,-1*CenterBottomRightY); end
 legend('ArenaTL','ArenaTR','ArenaBL','ArenaBR','PlateBR', 'PlateTL','ModifiedBRPlateLocation')
 else % need to modify coordinates of top left
 CenterTopLeftX=0.9*ReferanceCorner(1);
 CenterTopLeftY=0.8*ReferanceCorner(2);
 if EphysObj.Variables.DisplayPlot
-scatter(CenterTopLeftX,-1*CenterTopLeftY); end
+scatter(CenterTopLeftX,-1*CenterTopLeftY); 
+end
 end
 end % if
 end % for
@@ -461,7 +463,7 @@ EphysObj.Video.XvaluesPerFrame=XvaluesPerFrame;
 for Plot=1:1
     if EphysObj.Variables.DisplayPlot
 %% Plot the general track
-figure 
+subplot(1,2,2) 
 plot(Struct.Nose(:,1)',-1*Struct.Nose(:,2)');hold on
 plot(Struct.Implant(:,1),-1*Struct.Implant(:,2));hold on
 plot(Struct.Body(:,1),-1*Struct.Body(:,2));hold on
@@ -790,20 +792,7 @@ if EphysObj.Variables.FoodBR
 else 
     GroupNames={'Food','Empty','Rearing','Walking','Running','Stopping','RightTurn','LeftTurn'};
 end
-    if EphysObj.Variables.DisplayPlot
-        % plot all the averages from each motif (not including the sensor)
-figure
-b=bar(MeanOfFRs, 'grouped','FaceColor','flat');
-hold on
-errorbar(b.XEndPoints',MeanOfFRs,STDofFRs,'k','LineWidth', 1 ,'linestyle','none','HandleVisibility','off');
-set(gca,'xticklabel',GroupNames);
-xtickangle(90)
-ylabel(['Firing rate'],'FontSize', 12)
-hold on
-scatter(Xvalues,Yvalues,'MarkerFaceColor',[1 1 1],'MarkerEdgeColor',[0 0 0])
-saveas(b,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.Date,'\',EphysObj.Variables.MouseName,'\',EphysObj.Variables.FolderName,'\',EphysObj.Variables.UnitName,'_Bar.jpg']);
-saveas(b,['D:\SummaryData\',EphysObj.Variables.UnitName,'_Bar.jpg']);
-    end
+
     if EphysObj.Variables.DisplayPlot
 % figure 
 [EphysObj.Video.p,tbl,EphysObj.Video.stats] = anova1(EphysObj.Video.EachEventFR(:,[1:8]),GroupNames,'on');
@@ -820,6 +809,41 @@ writematrix(MotifAverage,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.
 writematrix(EphysObj.Video.EachEventFR,['D:\SummaryData\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','EachEventFR');
 writematrix(MotifAverage,['D:\SummaryData\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','Motif Averages');
 writetable(EphysObj.Video.OneWayANOVA,['D:\SummaryData\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','OneWayANOVA');
+%% plot all the averages from each motif (not including the sensor)
+EachEventFR=EphysObj.Video.EachEventFR;
+EachEventFR=EachEventFR(:,1:8);
+EachEventFR(~any(~isnan(EachEventFR), 2),:)=[];
+MeanOfFRsZ= zscore(MeanOfFRs,1,'all');
+    if EphysObj.Variables.DisplayPlot
+EachEventFRFigure=figure;
+subplot(3,1,1)
+b=bar(MeanOfFRs, 'grouped','FaceColor','flat');
+hold on
+errorbar(b.XEndPoints',MeanOfFRs,STDofFRs,'k','LineWidth', 1 ,'linestyle','none','HandleVisibility','off');
+set(gca,'xticklabel',GroupNames);
+xtickangle(90)
+ylabel(['Firing rate'],'FontSize', 12)
+hold on
+scatter(Xvalues,Yvalues,'MarkerFaceColor',[1 1 1],'MarkerEdgeColor',[0 0 0])
+saveas(b,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.Date,'\',EphysObj.Variables.MouseName,'\',EphysObj.Variables.FolderName,'\',EphysObj.Variables.UnitName,'_Bar.jpg']);
+saveas(b,['D:\SummaryData\',EphysObj.Variables.UnitName,'_Bar.jpg']);
+
+subplot(3,1,2)
+h = heatmap(EachEventFR,'Colormap',jet, 'CellLabelColor','none','MissingDataColor', [1,1,1]);
+xlabel('Motif'); ylabel('Event #');
+MotifNames=extractfield(EphysObj.Video.Motifs,'Name');
+h.XDisplayLabels=MotifNames(1:8);
+title('FR in each motif (hz)')
+%
+     subplot(3,1,3)
+d = heatmap(MeanOfFRsZ,'Colormap',jet, 'MissingDataColor', [1,1,1]);
+xlabel('Motif'); 
+MotifNames=extractfield(EphysObj.Video.Motifs,'Name');
+d.XDisplayLabels=MotifNames(1:8);
+title('Average FR in each motif (z scored)')
+ end
+
+%%
 end
  for Plot=1:1
      if DisplayPlot
@@ -967,35 +991,7 @@ end
 
 
 
-%% make an array for all the FR in bouts
-Data=nan(9,60);
-% Get the FR of each event that is grater than minimal bout time
-for MotifNumber=[1:8 10]
-    if MotifNumber<10
-    Data(MotifNumber,1:length(EphysObj.Video.Motifs(MotifNumber).Bout))=extractfield(EphysObj.Video.Motifs(MotifNumber).Bout,'FRinBoat')';
-    else
-    Data(MotifNumber-1,1:length(EphysObj.Video.Motifs(MotifNumber).Bout))=extractfield(EphysObj.Video.Motifs(MotifNumber).Bout,'FRinBoat')';
-    end
-    % EphysObj.Video.Motifs.AverageHeatmapData=mean(Data,2,'omitnan');
-    if EphysObj.Variables.DisplayPlot
-        if MotifNumber==1; figure; end
-h = heatmap(Data,'Colormap',jet, 'CellLabelColor','none','MissingDataColor', [1,1,1]);
-xlabel('Event #'); ylabel('Motif');
-h.YDisplayLabels=MotifNames([1:8 10]);
-    end
-end
-% save the average dat to obj 
-EphysObj.Video.AverageHeatmapData=mean(Data,2,'omitnan');
-EphysObj.Video.AverageHeatmapDataZ=zscore(EphysObj.Video.AverageHeatmapData);
-EphysObj.Video.AverageHeatmapDataZ=mean(zscore(Data,1,'omitnan'),2,'omitnan');
 
-% make a heatmap of the z-scored average data
-if EphysObj.Variables.DisplayPlot
-AverageHeatmap=figure;
-h = heatmap(EphysObj.Video.AverageHeatmapDataZ,'Colormap',jet, 'MissingDataColor', [1,1,1]);
-xlabel('Event #'); ylabel('Motif');
-h.YDisplayLabels=MotifNames([1:8 10]);
-end
     end
 
 end
