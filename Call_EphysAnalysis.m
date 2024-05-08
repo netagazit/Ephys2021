@@ -4,11 +4,10 @@ close all; clc; clear all; clearvars -Except Variables BadCount FileStructure Li
 a='2020-02-21_SUBLAT13-3_Tetrode_1_Unit_1_File_03'; % 2, 3, 4, 5, 2020-03-09_SUBLAT11-7_Tetrode_3_Unit_1_File_3
 Count=1;BadCount=1;if ~exist('ListOfFiles'); ListOfFiles={a};end
 for AddPathAndDir=1:1%% add to pathc
-% add NLX libraries
-addpath(genpath('C:\Users\netas\OneDrive\Documents\MATLAB - Copy\Obesity\InVivoEphys\Field Trip Neuralynx'));
-addpath('C:\Users\netas\OneDrive\Documents\MATLAB - Copy\Obesity\InVivoEphys\NeuralynxMatlabImportExport_v6.0.0')
-% add DLC library
-addpath('C:\Users\netas\OneDrive\Documents\MATLAB - Copy\Obesity\DeepLabCut')
+% add libraries
+addpath(genpath('C:\Users\netas\OneDrive\Documents\GitHub\Ephys2021\DeepLabCut'));
+addpath(genpath('C:\Users\netas\OneDrive\Documents\GitHub\Ephys2021\Field Trip Neuralynx'));
+addpath(genpath('C:\Users\netas\OneDrive\Documents\GitHub\Ephys2021\NeuralynxMatlabImportExport_v6.0.0'));
 %% find files location
 if exist('D:')
 Variables.ComputerDir='D:';
@@ -59,11 +58,13 @@ Variables.WindowSizeSec=25; % window of 10 sec peri-event plot (0.1 for laser, 2
 Variables.RasterAll =false;%[1:8 10]
 Variables.PlotZscore=false;
 Variables.SortByMotifLength=false;
+Variables.DisplayPlot=true;
+
 %% VARIABLES RELATED TO ANALYSIS
-Variables.MinimalboutIntervalSec=6; % interval between bouts
+Variables.MinimalboutIntervalSec=4; % interval between bouts
 Variables.BoutLengthSecondsLimit=0.5; % minimal bout length
 Variables.TimeLimit=15; % time in minutes-limits the timeframe of the analysis from start to the specified time
-
+%% Plot related variables 
 %% VARIABLES THAT WE CAN EXTRACT FROM FILE NAME
 REGlist={'SUBLAT13-3', 'SUBLAT13-9','SUBLAT11-7','SUBLAT18-9','SUBLAT19-9','SUBLAT18-5','SUBLAT21-5','SUBLAT20-7'};
 for u=1:length(REGlist)

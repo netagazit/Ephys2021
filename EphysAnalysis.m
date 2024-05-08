@@ -241,6 +241,7 @@ end
            
  
         function [EphysObj] = VideoAnalyse(EphysObj,DisplayPlot,Threshold,MinimalBoutTime) 
+          DisplayPlot  =EphysObj.Variables.DisplayPlot;
 Events = EphysObj.Events; 
 % EphysObj.Variables.FoodBR=datetime(EphysObj.Variables.Date)<datetime('2021-01-01');
 %% find video file
@@ -339,8 +340,9 @@ EphysObj.Video.DistanceBetweenPlates=sqrt((CenterTopLeftX-CenterBottomRightX).^2
 EphysObj.Video.DistanceBetweenPlatesXY=[CenterTopLeftX-CenterBottomRightX,CenterTopLeftY-CenterBottomRightY];
 % correct to the case one of the plates is detected in the wrong location
 for Plot=1:1
-    if DisplayPlot
-      figure;scatter(Arena.TopLeft(1),-1*Arena.TopLeft(2)); hold on
+    if EphysObj.Variables.DisplayPlot
+      figure;
+      scatter(Arena.TopLeft(1),-1*Arena.TopLeft(2)); hold on
       scatter(Arena.TopRight(1),-1*Arena.TopRight(2)); hold on
        scatter(Arena.BottomLeft(1),-1*Arena.BottomLeft(2)); hold on
       scatter(Arena.BottomRight(1),-1*Arena.BottomRight(2)); hold on
@@ -382,14 +384,14 @@ end % if
 if BottomRightPlate % need to modify coordinates of bottom right
 CenterBottomRightX=0.9*ReferanceCorner(1);
 CenterBottomRightY=0.8*ReferanceCorner(2);
-if DisplayPlot
+if EphysObj.Variables.DisplayPlot
     figure
 scatter(CenterBottomRightX,-1*CenterBottomRightY); end
 legend('ArenaTL','ArenaTR','ArenaBL','ArenaBR','PlateBR', 'PlateTL','ModifiedBRPlateLocation')
 else % need to modify coordinates of top left
 CenterTopLeftX=0.9*ReferanceCorner(1);
 CenterTopLeftY=0.8*ReferanceCorner(2);
-if DisplayPlot
+if EphysObj.Variables.DisplayPlot
 scatter(CenterTopLeftX,-1*CenterTopLeftY); end
 end
 end % if
@@ -457,7 +459,7 @@ Xvalues=linspace(0,EDGES(end),length(EDGES)-1);% get x centers to plot the FR an
 XvaluesPerFrame=linspace(0,EDGESPerFrame(end),length(EDGESPerFrame)-1);% get x centers to plot the FR and Sensor rate
 EphysObj.Video.XvaluesPerFrame=XvaluesPerFrame;
 for Plot=1:1
-    if DisplayPlot
+    if EphysObj.Variables.DisplayPlot
 %% Plot the general track
 figure 
 plot(Struct.Nose(:,1)',-1*Struct.Nose(:,2)');hold on
@@ -470,7 +472,7 @@ plot(Struct.BottomRight(:,1),-1*Struct.BottomRight(:,2));hold on
 legend('Nose','Implant','Body','Tail','TopLeft','BottomRight')
     end % if
 end %for plot
-figure
+% figure
 %% figure out the implant position relative to the plates
 for i=[1:4]
 EphysObj.Video.DistanceArray(i).AverageTL=mean(EphysObj.Video.DistanceArray(8).Distances(:,i),'omitnan');
@@ -587,6 +589,8 @@ EphysObj.Video.AllFrames=AllFrames;
 % title ('Velocity vs unit activity')
 xlim([0 15])
 % plot the activity on one timeline
+    if EphysObj.Variables.DisplayPlot
+
 BehaviorFigure=figure;
 % if BR is food plate
 if EphysObj.Variables.FoodBR
@@ -611,12 +615,12 @@ else
 try plot(Xvalues/60000000,(DataN),'-k');hold on; catch;end % plot data in black
 try plot(Xvalues/60000000,(-1*SensorN),'-r');hold on; catch;end % plot sensor in red
 end
-
-
 legend('Food Plate','Empty Plate','Rearing','Walking','Running','Stopping','RightTurn','LeftTurn','Sensor','Unit')
 xlabel('Time (minutes)'); ylabel('Sensor frequency (hz)');
 % ylim([-60 60])
 xlim([0 15])
+    end
+
 % %% Plot a selected frame with markers
 % count=1; figure
 % for MotifNumber=1:length(AllFrames)-1
@@ -781,21 +785,31 @@ CountofFRs=[CountofFRs length(find(~isnan(EphysObj.Video.EachEventFR(:,i))))];
 Xvalues= [Xvalues i*ones(1,length(find(~isnan(EphysObj.Video.EachEventFR(:,i)))))];
 Yvalues=[Yvalues (EphysObj.Video.EachEventFR((~isnan(EphysObj.Video.EachEventFR(:,i))),i))'];
 end
+if EphysObj.Variables.FoodBR
+    GroupNames={'Empty','Food','Rearing','Walking','Running','Stopping','RightTurn','LeftTurn'};
+else 
+    GroupNames={'Food','Empty','Rearing','Walking','Running','Stopping','RightTurn','LeftTurn'};
+end
+    if EphysObj.Variables.DisplayPlot
+        % plot all the averages from each motif (not including the sensor)
 figure
 b=bar(MeanOfFRs, 'grouped','FaceColor','flat');
 hold on
 errorbar(b.XEndPoints',MeanOfFRs,STDofFRs,'k','LineWidth', 1 ,'linestyle','none','HandleVisibility','off');
-if EphysObj.Variables.FoodBR
-set(gca,'xticklabel',{'Empty','Food','Rearing','Walking','Running','Stopping','RightTurn','LeftTurn'});
-else 
-set(gca,'xticklabel',{'Food','Empty','Rearing','Walking','Running','Stopping','RightTurn','LeftTurn'});
-end
+set(gca,'xticklabel',GroupNames);
 xtickangle(90)
 ylabel(['Firing rate'],'FontSize', 12)
 hold on
 scatter(Xvalues,Yvalues,'MarkerFaceColor',[1 1 1],'MarkerEdgeColor',[0 0 0])
-figure
-[EphysObj.Video.p,tbl,EphysObj.Video.stats] = anova1(EphysObj.Video.EachEventFR(:,[1:8]));
+saveas(b,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.Date,'\',EphysObj.Variables.MouseName,'\',EphysObj.Variables.FolderName,'\',EphysObj.Variables.UnitName,'_Bar.jpg']);
+saveas(b,['D:\SummaryData\',EphysObj.Variables.UnitName,'_Bar.jpg']);
+    end
+    if EphysObj.Variables.DisplayPlot
+% figure 
+[EphysObj.Video.p,tbl,EphysObj.Video.stats] = anova1(EphysObj.Video.EachEventFR(:,[1:8]),GroupNames,'on');
+    else
+[EphysObj.Video.p,tbl,EphysObj.Video.stats] = anova1(EphysObj.Video.EachEventFR(:,[1:8]),GroupNames,'off');
+    end
 % [EphysObj.Video.p,tbl,EphysObj.Video.stats] = kruskalwallis(EphysObj.Video.EachEventFR(:,[1:8]));
 results = multcompare(EphysObj.Video.stats);
 MotifAverage=mean(EphysObj.Video.EachEventFR,'omitnan');
@@ -803,11 +817,9 @@ EphysObj.Video.OneWayANOVA = array2table(results,"VariableNames",["Group A","Gro
 writematrix(EphysObj.Video.EachEventFR,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.Date,'\',EphysObj.Variables.MouseName,'\',EphysObj.Variables.FolderName,'\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','Each Event FR');
 writetable(EphysObj.Video.OneWayANOVA,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.Date,'\',EphysObj.Variables.MouseName,'\',EphysObj.Variables.FolderName,'\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','One-Way ANOVA');
 writematrix(MotifAverage,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.Date,'\',EphysObj.Variables.MouseName,'\',EphysObj.Variables.FolderName,'\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','Motif Averages');
-saveas(b,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.Date,'\',EphysObj.Variables.MouseName,'\',EphysObj.Variables.FolderName,'\',EphysObj.Variables.UnitName,'_Bar.jpg']);
 writematrix(EphysObj.Video.EachEventFR,['D:\SummaryData\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','EachEventFR');
 writematrix(MotifAverage,['D:\SummaryData\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','Motif Averages');
 writetable(EphysObj.Video.OneWayANOVA,['D:\SummaryData\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','OneWayANOVA');
-saveas(b,['D:\SummaryData\',EphysObj.Variables.UnitName,'_Bar.jpg']);
 end
  for Plot=1:1
      if DisplayPlot
@@ -864,7 +876,9 @@ for m=1:2
     if m==2
         EphysObj.Variables.PlotOnset=false;
     end
+if EphysObj.Variables.DisplayPlot
 subplot(3, 2, m);
+end
 TimesStartSec=extractfield(Raster(Motif).Bout,'StartTime')*60;  
 TimesEndSec=extractfield(Raster(Motif).Bout,'EndTime')*60; 
 BoutLengthSec=extractfield(Raster(Motif).Bout,'BoutLength')*60; 
@@ -894,6 +908,7 @@ ActivityInRange=CellTimeStamp(Minimal2Collect<CellTimeStamp & CellTimeStamp<Maxi
 ActivityInRangeZeroed=ActivityInRange-Time2Use(BoutNumber);
 ArrayForScatter(BoutNumber,1:length(ActivityInRangeZeroed))=ActivityInRangeZeroed;
 % plot all the timestamps bined to 1 sec
+    if EphysObj.Variables.DisplayPlot
 scatter(ActivityInRangeZeroed,BoutNumber*ones(length(ActivityInRange),1),10,'|','MarkerFaceColor','k','MarkerEdgeColor','k',...
     'MarkerFaceAlpha',.2,'MarkerEdgeAlpha',.2);hold on
 % Add bout start/end times
@@ -902,7 +917,9 @@ scatter(TimesEndSec(BoutNumber)-TimesStartSec(BoutNumber),BoutNumber,'r','|');ho
 else
 scatter(TimesStartSec(BoutNumber)-TimesEndSec(BoutNumber),BoutNumber,'r','|');hold on
 end
+    end
 end; clear Minimal2Collect Maximal2Collect ActivityInRange ActivityInRangeZeroed
+    if EphysObj.Variables.DisplayPlot
 xlabel('Time from event onset (Sec)'); ylabel('Event'); xline(0);
 if m==2
     title('offset');
@@ -910,8 +927,8 @@ else
     title('onset');
 end
 xlim([-EphysObj.Variables.WindowSizeSec EphysObj.Variables.WindowSizeSec])
+    end
 %% Make a histogram of each event
-subplot(3, 2, m+4);
 % show each individule trace
 for i=BoutLengthSecOrder 
 [N,~] = histcounts(ArrayForScatter(i,:),NumberOfBinsHz); 
@@ -919,24 +936,29 @@ for i=BoutLengthSecOrder
 CollectFrequency(i,:)=N;
 clear N
 end 
-xlim([-EphysObj.Variables.WindowSizeSec EphysObj.Variables.WindowSizeSec])
 % Add the average trace
-[Sum,~] = histcounts(ArrayForScatter,NumberOfBinsHz); hold on
+[Sum,~] = histcounts(ArrayForScatter,NumberOfBinsHz); 
 % AverageFrequency=double(Sum/size(ArrayForScatter,1));
 if EphysObj.Variables.PlotZscore
  CollectFrequency=zscore(CollectFrequency,1,'all');
 end
 data_Frequency=mean(CollectFrequency,1);
 data_SEM = std(CollectFrequency,1)/sqrt(size(CollectFrequency,1));       % SEM Across Columns
+    if EphysObj.Variables.DisplayPlot
+subplot(3, 2, m+4);
 plot(BinCenters,data_Frequency,'Color','k','LineWidth', 2);hold on
 plot(BinCenters,data_Frequency+data_SEM, 'k--', 'LineWidth', 0.5);hold on
 plot(BinCenters,data_Frequency-data_SEM, 'k--', 'LineWidth', 0.5);
-xlabel('Time from event onset (Sec)'); ylabel('Firing rate (hz)'); xline(0);  
+xlabel('Time from event onset (Sec)'); ylabel('Firing rate (hz)'); xline(0); 
+xlim([-EphysObj.Variables.WindowSizeSec EphysObj.Variables.WindowSizeSec])
+    end
 %% Make a heatmap of each event
+    if EphysObj.Variables.DisplayPlot
 subplot(3, 2, m+2);
 hHM=heatmap(CollectFrequency,'Colormap',jet,'CellLabelColor','none'); %'ColorLimits',[0 20]
 hHM.NodeChildren(3).YDir='normal';  
 sgtitle(char(MotifNames(Motif))) 
+    end
 end
 %% save the figure
 saveas(RasterFigure,['C:\Users\netas\OneDrive\Documents\Obeisty paper\EXPERIMENTS\Single unit\UnitImages\',EphysObj.Variables.Date,'_',EphysObj.Variables.MouseName,'_Tetrode_',num2str(EphysObj.Variables.TetrodeNumber),'_Unit_',num2str(EphysObj.Variables.UnitNumber),'_File_0',num2str(EphysObj.Variables.FileNumber),char(MotifNames(Motif)),'.jpg'])
@@ -948,22 +970,32 @@ end
 %% make an array for all the FR in bouts
 Data=nan(9,60);
 % Get the FR of each event that is grater than minimal bout time
-figure
 for MotifNumber=[1:8 10]
     if MotifNumber<10
     Data(MotifNumber,1:length(EphysObj.Video.Motifs(MotifNumber).Bout))=extractfield(EphysObj.Video.Motifs(MotifNumber).Bout,'FRinBoat')';
     else
     Data(MotifNumber-1,1:length(EphysObj.Video.Motifs(MotifNumber).Bout))=extractfield(EphysObj.Video.Motifs(MotifNumber).Bout,'FRinBoat')';
     end
-    EphysObj.Video.Motifs.AverageHeatmapData=mean(Data,2,'omitnan');
+    % EphysObj.Video.Motifs.AverageHeatmapData=mean(Data,2,'omitnan');
+    if EphysObj.Variables.DisplayPlot
+        if MotifNumber==1; figure; end
 h = heatmap(Data,'Colormap',jet, 'CellLabelColor','none','MissingDataColor', [1,1,1]);
 xlabel('Event #'); ylabel('Motif');
 h.YDisplayLabels=MotifNames([1:8 10]);
+    end
 end
 % save the average dat to obj 
 EphysObj.Video.AverageHeatmapData=mean(Data,2,'omitnan');
-EphysObj.Video.AverageHeatmapDataZ=mean(zscore(Data,1,'omitnan'),2,'omitnan');
 EphysObj.Video.AverageHeatmapDataZ=zscore(EphysObj.Video.AverageHeatmapData);
+EphysObj.Video.AverageHeatmapDataZ=mean(zscore(Data,1,'omitnan'),2,'omitnan');
+
+% make a heatmap of the z-scored average data
+if EphysObj.Variables.DisplayPlot
+AverageHeatmap=figure;
+h = heatmap(EphysObj.Video.AverageHeatmapDataZ,'Colormap',jet, 'MissingDataColor', [1,1,1]);
+xlabel('Event #'); ylabel('Motif');
+h.YDisplayLabels=MotifNames([1:8 10]);
+end
     end
 
 end
