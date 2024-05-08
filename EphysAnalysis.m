@@ -139,7 +139,7 @@ header=EphysObj.raw_data.hdr.Heade;
 Events = read_neuralynx_nev(event_file);
 %% find event port for each TTL
 for i=1:length(Events)
-% go through the "ON" Events and figure out the port of each TTL
+% go through the "ON" Events and find out the port of each TTL
 % event port 10 is port 0 11 is port 1 atc.
 if contains(Events(i).EventString,' value (0x0000)')
 Events(i).EventPort=nan;
@@ -341,7 +341,8 @@ EphysObj.Video.DistanceBetweenPlatesXY=[CenterTopLeftX-CenterBottomRightX,Center
 % correct to the case one of the plates is detected in the wrong location
 for Plot=1:1
     if EphysObj.Variables.DisplayPlot
-      figure;
+          figure
+    subplot(2,1,1);
       scatter(Arena.TopLeft(1),-1*Arena.TopLeft(2)); hold on
       scatter(Arena.TopRight(1),-1*Arena.TopRight(2)); hold on
        scatter(Arena.BottomLeft(1),-1*Arena.BottomLeft(2)); hold on
@@ -385,10 +386,10 @@ if BottomRightPlate % need to modify coordinates of bottom right
 CenterBottomRightX=0.9*ReferanceCorner(1);
 CenterBottomRightY=0.8*ReferanceCorner(2);
 if EphysObj.Variables.DisplayPlot
-    figure
-    subplot(1,2,1)
-scatter(CenterBottomRightX,-1*CenterBottomRightY); end
+    scatter(CenterBottomRightX,-1*CenterBottomRightY); end
 legend('ArenaTL','ArenaTR','ArenaBL','ArenaBR','PlateBR', 'PlateTL','ModifiedBRPlateLocation')
+title('Arena and plate leyout')
+
 else % need to modify coordinates of top left
 CenterTopLeftX=0.9*ReferanceCorner(1);
 CenterTopLeftY=0.8*ReferanceCorner(2);
@@ -463,15 +464,22 @@ EphysObj.Video.XvaluesPerFrame=XvaluesPerFrame;
 for Plot=1:1
     if EphysObj.Variables.DisplayPlot
 %% Plot the general track
-subplot(1,2,2) 
-plot(Struct.Nose(:,1)',-1*Struct.Nose(:,2)');hold on
+subplot(2,1,2) 
+% plot(Struct.Nose(:,1)',-1*Struct.Nose(:,2)');hold on
 plot(Struct.Implant(:,1),-1*Struct.Implant(:,2));hold on
-plot(Struct.Body(:,1),-1*Struct.Body(:,2));hold on
-plot(Struct.Tail(:,1),-1*Struct.Tail(:,2));hold on
+% plot(Struct.Body(:,1),-1*Struct.Body(:,2));hold on
+% plot(Struct.Tail(:,1),-1*Struct.Tail(:,2));hold on
 plot(Struct.TopLeft(:,1),-1*Struct.TopLeft(:,2));hold on
 plot(Struct.BottomRight(:,1),-1*Struct.BottomRight(:,2));hold on
 % xlim([0 MaxX]); ylim([0 -MaxY]);
 legend('Nose','Implant','Body','Tail','TopLeft','BottomRight')
+if EphysObj.Variables.FoodBR
+    legend('Head','Empty','Food')
+else
+        legend('Head','Food','Empty')
+end
+title('head movment over the whole session')
+figure
     end % if
 end %for plot
 % figure

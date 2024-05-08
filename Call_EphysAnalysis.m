@@ -1,7 +1,7 @@
 %% this code uses the following function: InVivoEphys.m , Field Trip Neuralynx, NeuralynxMatlabImportExport_v6.0.0, burst.m. 
 close all; clc; clear all; clearvars -Except Variables BadCount FileStructure ListOfFiles Count  %% clear all Count=1 %ListOfFiles={}% clear all
 %% 
-a='2020-02-14_SUBLAT13-9_Tetrode_8_Unit_1_File_03'; % 2, 3, 4, 5, 2020-03-09_SUBLAT11-7_Tetrode_3_Unit_1_File_3
+a='2020-02-21_SUBLAT13-3_Tetrode_1_Unit_1_File_03'; % 2, 3, 4, 5, 2020-03-09_SUBLAT11-7_Tetrode_3_Unit_1_File_3
 Count=1;BadCount=1;if ~exist('ListOfFiles'); ListOfFiles={a};end
 for AddPathAndDir=1:1%% add to pathc
 % add libraries
