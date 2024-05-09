@@ -1,7 +1,7 @@
 %% this code uses the following function: InVivoEphys.m , Field Trip Neuralynx, NeuralynxMatlabImportExport_v6.0.0, burst.m. 
 close all; clc; clear all; clearvars -Except Variables BadCount FileStructure ListOfFiles Count  %% clear all Count=1 %ListOfFiles={}% clear all
 %% 
-a='2020-02-21_SUBLAT13-3_Tetrode_1_Unit_1_File_03'; % 2, 3, 4, 5, 2020-03-09_SUBLAT11-7_Tetrode_3_Unit_1_File_3
+a='2020-02-25_SUBLAT11-7_Tetrode_5_Unit_1_File_03'; % 2, 3, 4, 5, 2020-03-09_SUBLAT11-7_Tetrode_3_Unit_1_File_3
 Count=1;BadCount=1;if ~exist('ListOfFiles'); ListOfFiles={a};end
 for AddPathAndDir=1:1%% add to pathc
 % add libraries
@@ -58,7 +58,7 @@ Variables.WindowSizeSec=25; % window of 10 sec peri-event plot (0.1 for laser, 2
 Variables.RasterAll =false;%[1:8 10]
 Variables.PlotZscore=false;
 Variables.SortByMotifLength=false;
-Variables.DisplayPlot=true;
+Variables.DisplayPlot=false;
 
 %% VARIABLES RELATED TO ANALYSIS
 Variables.MinimalboutIntervalSec=4; % interval between bouts
@@ -152,8 +152,8 @@ if Variables.PlotScatter
 end
 clearvars -EXCEPT BadCount CollectBadFiles EphysObj FileStructure ListOfFiles CollectAllData NameList Count AllEphysObjs EphysObj CollectAllRsquared CollectAllRsquaredNoZeros  DataBase  LaserCollect LickometerCollect
 
-
-
+%% Save some of the variables for group analysis
+Obj2Save.Variables=EphysObj.Variables;
 
 %%    
     end

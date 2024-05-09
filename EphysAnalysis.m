@@ -483,7 +483,7 @@ figure
     end % if
 end %for plot
 % figure
-%% figure out the implant position relative to the plates
+%% Find out the implant position relative to the plates
 for i=[1:4]
 EphysObj.Video.DistanceArray(i).AverageTL=mean(EphysObj.Video.DistanceArray(8).Distances(:,i),'omitnan');
 EphysObj.Video.DistanceArray(i).AverageBR=mean(EphysObj.Video.DistanceArray(7).Distances(:,i),'omitnan');
@@ -800,28 +800,27 @@ if EphysObj.Variables.FoodBR
 else 
     GroupNames={'Food','Empty','Rearing','Walking','Running','Stopping','RightTurn','LeftTurn'};
 end
-
     if EphysObj.Variables.DisplayPlot
 % figure 
-[EphysObj.Video.p,tbl,EphysObj.Video.stats] = anova1(EphysObj.Video.EachEventFR(:,[1:8]),GroupNames,'on');
+[EphysObj.Video.kruskalwallis_p,EphysObj.Video.kruskalwallis_tbl,EphysObj.Video.kruskalwallis_stats] = kruskalwallis(EphysObj.Video.EachEventFR(:,[1:8]),GroupNames,'on');
+   EphysObj.Video.multcompare_results = multcompare(EphysObj.Video.kruskalwallis_stats,"Display","on");%'ctype','dunn-sidak'
     else
-[EphysObj.Video.p,tbl,EphysObj.Video.stats] = anova1(EphysObj.Video.EachEventFR(:,[1:8]),GroupNames,'off');
+[EphysObj.Video.kruskalwallis_p,EphysObj.Video.kruskalwallis_tbl,EphysObj.Video.kruskalwallis_stats] = kruskalwallis(EphysObj.Video.EachEventFR(:,[1:8]),GroupNames,'off');
+   EphysObj.Video.multcompare_results = multcompare(EphysObj.Video.kruskalwallis_stats,"Display","off");%'ctype','dunn-sidak'
     end
-% [EphysObj.Video.p,tbl,EphysObj.Video.stats] = kruskalwallis(EphysObj.Video.EachEventFR(:,[1:8]));
-results = multcompare(EphysObj.Video.stats);
-MotifAverage=mean(EphysObj.Video.EachEventFR,'omitnan');
-EphysObj.Video.OneWayANOVA = array2table(results,"VariableNames",["Group A","Group B","Lower Limit","A-B","Upper Limit","P-value"]);
+EphysObj.Video.MultiCompare_pairs = array2table(EphysObj.Video.multcompare_results,"VariableNames",["Group A","Group B","Lower Limit","A-B","Upper Limit","P-value"]);
 writematrix(EphysObj.Video.EachEventFR,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.Date,'\',EphysObj.Variables.MouseName,'\',EphysObj.Variables.FolderName,'\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','Each Event FR');
-writetable(EphysObj.Video.OneWayANOVA,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.Date,'\',EphysObj.Variables.MouseName,'\',EphysObj.Variables.FolderName,'\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','One-Way ANOVA');
+writetable(EphysObj.Video.MultiCompare_pairs,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.Date,'\',EphysObj.Variables.MouseName,'\',EphysObj.Variables.FolderName,'\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','One-Way ANOVA');
+MotifAverage=mean(EphysObj.Video.EachEventFR,'omitnan');
 writematrix(MotifAverage,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.Date,'\',EphysObj.Variables.MouseName,'\',EphysObj.Variables.FolderName,'\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','Motif Averages');
 writematrix(EphysObj.Video.EachEventFR,['D:\SummaryData\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','EachEventFR');
 writematrix(MotifAverage,['D:\SummaryData\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','Motif Averages');
-writetable(EphysObj.Video.OneWayANOVA,['D:\SummaryData\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','OneWayANOVA');
+writetable(EphysObj.Video.MultiCompare_pairs,['D:\SummaryData\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','OneWayANOVA');
 %% plot all the averages from each motif (not including the sensor)
 EachEventFR=EphysObj.Video.EachEventFR;
 EachEventFR=EachEventFR(:,1:8);
 EachEventFR(~any(~isnan(EachEventFR), 2),:)=[];
-MeanOfFRsZ= zscore(MeanOfFRs,1,'all');
+EphysObj.Video.MeanOfFRsZ= zscore(MeanOfFRs,1,'all');
     if EphysObj.Variables.DisplayPlot
 EachEventFRFigure=figure;
 subplot(3,1,1)
@@ -844,7 +843,7 @@ h.XDisplayLabels=MotifNames(1:8);
 title('FR in each motif (hz)')
 %
      subplot(3,1,3)
-d = heatmap(MeanOfFRsZ,'Colormap',jet, 'MissingDataColor', [1,1,1]);
+d = heatmap(EphysObj.Video.MeanOfFRsZ,'Colormap',jet, 'MissingDataColor', [1,1,1]);
 xlabel('Motif'); 
 MotifNames=extractfield(EphysObj.Video.Motifs,'Name');
 d.XDisplayLabels=MotifNames(1:8);
@@ -903,12 +902,12 @@ else
     EphysObj.Variables.Motif2Analyse=1;
 end
 for Motif=EphysObj.Variables.Motif2Analyse%
-        RasterFigure=figure;
 for m=1:2
     if m==2
         EphysObj.Variables.PlotOnset=false;
     end
 if EphysObj.Variables.DisplayPlot
+            RasterFigure=figure;
 subplot(3, 2, m);
 end
 TimesStartSec=extractfield(Raster(Motif).Bout,'StartTime')*60;  
@@ -990,10 +989,10 @@ subplot(3, 2, m+2);
 hHM=heatmap(CollectFrequency,'Colormap',jet,'CellLabelColor','none'); %'ColorLimits',[0 20]
 hHM.NodeChildren(3).YDir='normal';  
 sgtitle(char(MotifNames(Motif))) 
-    end
-end
 %% save the figure
 saveas(RasterFigure,['C:\Users\netas\OneDrive\Documents\Obeisty paper\EXPERIMENTS\Single unit\UnitImages\',EphysObj.Variables.Date,'_',EphysObj.Variables.MouseName,'_Tetrode_',num2str(EphysObj.Variables.TetrodeNumber),'_Unit_',num2str(EphysObj.Variables.UnitNumber),'_File_0',num2str(EphysObj.Variables.FileNumber),char(MotifNames(Motif)),'.jpg'])
+    end
+end
 end
 %% Piezo bouts
 
