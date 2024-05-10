@@ -386,10 +386,10 @@ if BottomRightPlate % need to modify coordinates of bottom right
 CenterBottomRightX=0.9*ReferanceCorner(1);
 CenterBottomRightY=0.8*ReferanceCorner(2);
 if EphysObj.Variables.DisplayPlot
-    scatter(CenterBottomRightX,-1*CenterBottomRightY); end
+    scatter(CenterBottomRightX,-1*CenterBottomRightY); 
 legend('ArenaTL','ArenaTR','ArenaBL','ArenaBR','PlateBR', 'PlateTL','ModifiedBRPlateLocation')
 title('Arena and plate leyout')
-
+end
 else % need to modify coordinates of top left
 CenterTopLeftX=0.9*ReferanceCorner(1);
 CenterTopLeftY=0.8*ReferanceCorner(2);
@@ -597,7 +597,7 @@ EphysObj.Video.AllFrames=AllFrames;
 % ylim([0 60])
 % legend('Velocity','Unit Activity')
 % title ('Velocity vs unit activity')
-xlim([0 15])
+% xlim([0 15])
 % plot the activity on one timeline
     if EphysObj.Variables.DisplayPlot
 
@@ -802,10 +802,18 @@ else
 end
     if EphysObj.Variables.DisplayPlot
 % figure 
+if EphysObj.Variables.UseAnova
+[EphysObj.Video.kruskalwallis_p,EphysObj.Video.kruskalwallis_tbl,EphysObj.Video.kruskalwallis_stats] = anova1(EphysObj.Video.EachEventFR(:,[1:8]),GroupNames,'on');
+else
 [EphysObj.Video.kruskalwallis_p,EphysObj.Video.kruskalwallis_tbl,EphysObj.Video.kruskalwallis_stats] = kruskalwallis(EphysObj.Video.EachEventFR(:,[1:8]),GroupNames,'on');
+end
 EphysObj.Video.multcompare_results = multcompare(EphysObj.Video.kruskalwallis_stats,"Display","on");%'ctype','dunn-sidak'
-    else
+   else
+if EphysObj.Variables.UseAnova
+[EphysObj.Video.kruskalwallis_p,EphysObj.Video.kruskalwallis_tbl,EphysObj.Video.kruskalwallis_stats] = anova1(EphysObj.Video.EachEventFR(:,[1:8]),GroupNames,'off');
+else
 [EphysObj.Video.kruskalwallis_p,EphysObj.Video.kruskalwallis_tbl,EphysObj.Video.kruskalwallis_stats] = kruskalwallis(EphysObj.Video.EachEventFR(:,[1:8]),GroupNames,'off');
+end
 EphysObj.Video.multcompare_results = multcompare(EphysObj.Video.kruskalwallis_stats,"Display","off");%'ctype','dunn-sidak'
     end
 EphysObj.Video.MultiCompare_pairs = array2table(EphysObj.Video.multcompare_results,"VariableNames",["Group A","Group B","Lower Limit","A-B","Upper Limit","P-value"]);
@@ -902,12 +910,14 @@ else
     EphysObj.Variables.Motif2Analyse=1;
 end
 for Motif=EphysObj.Variables.Motif2Analyse%
+if EphysObj.Variables.DisplayPlot
+RasterFigure=figure;
+end
 for m=1:2
     if m==2
         EphysObj.Variables.PlotOnset=false;
     end
 if EphysObj.Variables.DisplayPlot
-            RasterFigure=figure;
 subplot(3, 2, m);
 end
 TimesStartSec=extractfield(Raster(Motif).Bout,'StartTime')*60;  
@@ -990,7 +1000,7 @@ hHM=heatmap(CollectFrequency,'Colormap',jet,'CellLabelColor','none'); %'ColorLim
 hHM.NodeChildren(3).YDir='normal';  
 sgtitle(char(MotifNames(Motif))) 
 %% save the figure
-saveas(RasterFigure,['C:\Users\netas\OneDrive\Documents\Obeisty paper\EXPERIMENTS\Single unit\UnitImages\',EphysObj.Variables.Date,'_',EphysObj.Variables.MouseName,'_Tetrode_',num2str(EphysObj.Variables.TetrodeNumber),'_Unit_',num2str(EphysObj.Variables.UnitNumber),'_File_0',num2str(EphysObj.Variables.FileNumber),char(MotifNames(Motif)),'.jpg'])
+saveas(RasterFigure,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.Date,'\',EphysObj.Variables.MouseName,'\',EphysObj.Variables.FolderName,'\',EphysObj.Variables.UnitName,'Raster_Figure.jpg']);
     end
 end
 end
@@ -1037,6 +1047,7 @@ PvalueMatrixSignificant=false(size(PvalueMatrix));
 PvalueMatrixSignificant(PvalueMatrix<0.05)=true;
 Obj2Save.PvalueMatrixSignificant=double(PvalueMatrixSignificant);
 if EphysObj.Variables.DisplayPlot
+    figure
 h=heatmap(double((PvalueMatrixSignificant)),'CellLabelColor','none');
 xlabel('Motif'); ylabel('Event #');
 MotifNames=extractfield(EphysObj.Video.Motifs,'Name');
