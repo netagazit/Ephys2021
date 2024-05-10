@@ -803,10 +803,10 @@ end
     if EphysObj.Variables.DisplayPlot
 % figure 
 [EphysObj.Video.kruskalwallis_p,EphysObj.Video.kruskalwallis_tbl,EphysObj.Video.kruskalwallis_stats] = kruskalwallis(EphysObj.Video.EachEventFR(:,[1:8]),GroupNames,'on');
-   EphysObj.Video.multcompare_results = multcompare(EphysObj.Video.kruskalwallis_stats,"Display","on");%'ctype','dunn-sidak'
+EphysObj.Video.multcompare_results = multcompare(EphysObj.Video.kruskalwallis_stats,"Display","on");%'ctype','dunn-sidak'
     else
 [EphysObj.Video.kruskalwallis_p,EphysObj.Video.kruskalwallis_tbl,EphysObj.Video.kruskalwallis_stats] = kruskalwallis(EphysObj.Video.EachEventFR(:,[1:8]),GroupNames,'off');
-   EphysObj.Video.multcompare_results = multcompare(EphysObj.Video.kruskalwallis_stats,"Display","off");%'ctype','dunn-sidak'
+EphysObj.Video.multcompare_results = multcompare(EphysObj.Video.kruskalwallis_stats,"Display","off");%'ctype','dunn-sidak'
     end
 EphysObj.Video.MultiCompare_pairs = array2table(EphysObj.Video.multcompare_results,"VariableNames",["Group A","Group B","Lower Limit","A-B","Upper Limit","P-value"]);
 writematrix(EphysObj.Video.EachEventFR,[EphysObj.Variables.ComputerDir,'\',EphysObj.Variables.Date,'\',EphysObj.Variables.MouseName,'\',EphysObj.Variables.FolderName,'\',EphysObj.Variables.UnitName,'_OneWayANOVA.xls'],'sheet','Each Event FR');
@@ -1001,5 +1001,53 @@ end
 
     end
 
+    function [Obj2Save]=MultipleCompHeatmap(EphysObj)
+%% Save some of the variables for group analysis
+Obj2Save.Variables=EphysObj.Variables;
+Obj2Save.MeanOfFRsZ=EphysObj.Video.MeanOfFRsZ';
+Obj2Save.kruskalwallis_p=EphysObj.Video.kruskalwallis_p;
+% WORK ON THE PAIR COMPERISONS
+Temp=table2array(EphysObj.Video.MultiCompare_pairs);
+Obj2Save.MultiCompare_pairs=[Temp(:,6);Temp(:,6);nan(8,1)];
+Obj2Save.MultiCompare_NumberA=[Temp(:,1);Temp(:,2);(1:8)'];
+Obj2Save.MultiCompare_NumberB=[Temp(:,2);Temp(:,1);(1:8)'];
+%Correct for Food location
+if ~EphysObj.Variables.FoodBR % if food is in colonm 1 switch it to 2
+   Obj2Save.MultiCompare_NumberA(Obj2Save.MultiCompare_NumberA==1)=9;
+   Obj2Save.MultiCompare_NumberB(Obj2Save.MultiCompare_NumberB==1)=9;
+   Obj2Save.MultiCompare_NumberA(Obj2Save.MultiCompare_NumberA==2)=1;
+   Obj2Save.MultiCompare_NumberB(Obj2Save.MultiCompare_NumberB==2)=1;   
+   Obj2Save.MultiCompare_NumberA(Obj2Save.MultiCompare_NumberA==9)=2;
+   Obj2Save.MultiCompare_NumberB(Obj2Save.MultiCompare_NumberB==9)=2;
+end
+% sort all by B
+[Obj2Save.MultiCompare_NumberB,Bsort]=sort(Obj2Save.MultiCompare_NumberB,"ascend");
+Obj2Save.MultiCompare_NumberA=Obj2Save.MultiCompare_NumberA(Bsort);
+Obj2Save.MultiCompare_pairs=Obj2Save.MultiCompare_pairs(Bsort);
+% sort all by A
+[Obj2Save.MultiCompare_NumberA,Asort]=sort(Obj2Save.MultiCompare_NumberA,"ascend");
+Obj2Save.MultiCompare_NumberB=Obj2Save.MultiCompare_NumberB(Asort);
+Obj2Save.MultiCompare_pairs=Obj2Save.MultiCompare_pairs(Asort);
+% make the matrix for p-value heatmap
+PvalueMatrix=[];
+for k=1:8
+PvalueMatrix=[PvalueMatrix,Obj2Save.MultiCompare_pairs(k*8-7:k*8)];
+end
+PvalueMatrixSignificant=false(size(PvalueMatrix));
+PvalueMatrixSignificant(PvalueMatrix<0.05)=true;
+Obj2Save.PvalueMatrixSignificant=double(PvalueMatrixSignificant);
+if EphysObj.Variables.DisplayPlot
+h=heatmap(double((PvalueMatrixSignificant)),'CellLabelColor','none');
+xlabel('Motif'); ylabel('Event #');
+MotifNames=extractfield(EphysObj.Video.Motifs,'Name');
+h.XDisplayLabels=MotifNames(1:8);
+h.YDisplayLabels=MotifNames(1:8);
+title('Multiple comperisons')
+end
+
+
+
+
+    end
 end
 end 

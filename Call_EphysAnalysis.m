@@ -1,7 +1,7 @@
 %% this code uses the following function: InVivoEphys.m , Field Trip Neuralynx, NeuralynxMatlabImportExport_v6.0.0, burst.m. 
-close all; clc; clear all; clearvars -Except Variables BadCount FileStructure ListOfFiles Count  %% clear all Count=1 %ListOfFiles={}% clear all
+ clearvars -Except Variables BadCount FileStructure ListOfFiles Count  %% Count=1 % ListOfFiles={} % clear all
 %% 
-a='2020-02-25_SUBLAT11-7_Tetrode_5_Unit_1_File_03'; % 2, 3, 4, 5, 2020-03-09_SUBLAT11-7_Tetrode_3_Unit_1_File_3
+a=' '; % 2, 3, 4, 5, 2020-03-09_SUBLAT11-7_Tetrode_3_Unit_1_File_3
 Count=1;BadCount=1;if ~exist('ListOfFiles'); ListOfFiles={a};end
 for AddPathAndDir=1:1%% add to pathc
 % add libraries
@@ -150,10 +150,16 @@ UnitData.RawData=EphysObj.raw_data;
 if Variables.PlotScatter
 [ArrayForScatter,CollectFrequency]=BoutAnalysis(EphysObj);
 end
-clearvars -EXCEPT BadCount CollectBadFiles EphysObj FileStructure ListOfFiles CollectAllData NameList Count AllEphysObjs EphysObj CollectAllRsquared CollectAllRsquaredNoZeros  DataBase  LaserCollect LickometerCollect
+%% Make scatter plots for each motif
+[Obj2Save]=MultipleCompHeatmap(EphysObj);
+save([EphysObj.Variables.ComputerDir,'\SummaryMay2024\',EphysObj.Variables.UnitName,'_Obj.mat'],'Obj2Save');
 
-%% Save some of the variables for group analysis
-Obj2Save.Variables=EphysObj.Variables;
+
+
+clearvars -EXCEPT Obj2Save BadCount CollectBadFiles EphysObj FileStructure ListOfFiles CollectAllData NameList Count AllEphysObjs EphysObj CollectAllRsquared CollectAllRsquaredNoZeros  DataBase  LaserCollect LickometerCollect
+
+
+
 
 %%    
     end
