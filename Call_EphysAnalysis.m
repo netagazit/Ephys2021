@@ -163,9 +163,15 @@ if Variables.PlotScatter
 end
 %% Make scatter plots for each motif
 [Obj2Save]=MultipleCompHeatmap(EphysObj);
-if EphysObj.Variables.Tagged
-if EphysObj.Variables.UseAnova
-save(['D:\SummaryMay2024\Tagged\ANOVA\',EphysObj.Variables.UnitName,'_Obj.mat'],'Obj2Save');
+
+%% save the file
+if EphysObj.Variables.Tagged; IsTagged='Tagged';else; IsTagged='NotTagged';end
+if EphysObj.Variables.UseAnova; IsTest='ANOVA';else; IsTest='kruskalwallis';end
+if length(EphysObj.Variables.Condition)>4 ; IsCondition='JELLY' ; else IsCondition='CHOW'; end
+if EphysObj.Variables.UseAnova; IsTest='ANOVA';else; IsTest='kruskalwallis';end
+
+
+save(['D:\SummaryMay2024\',EphysObj.Variables.DietType,' ',IsCondition,'\',IsTagged,'\',IsTest,'\',EphysObj.Variables.UnitName,'_Obj.mat'],'Obj2Save');
 else
 save(['D:\SummaryMay2024\Tagged\kruskalwallis\',EphysObj.Variables.UnitName,'_Obj.mat'],'Obj2Save');
 end
