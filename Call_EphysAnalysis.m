@@ -1,7 +1,7 @@
 %% this code uses the following function: InVivoEphys.m , Field Trip Neuralynx, NeuralynxMatlabImportExport_v6.0.0, burst.m. 
  clearvars -Except Variables BadCount FileStructure ListOfFiles Count  %% Count=1 % ListOfFiles={} % clear all
-% clear all
-a='2021-10-29_SUBLAT18-5_Tetrode_1_Unit_1_File_03'; % 2, 3, 4, 5, 2020-03-09_SUBLAT11-7_Tetrode_3_Unit_1_File_3
+clear all; close all;clc
+a='2021-11-02_SUBLAT20-7_Tetrode_7_Unit_1_File_03'; % 2, 3, 4, 5, 2020-03-09_SUBLAT11-7_Tetrode_3_Unit_1_File_3
 Count=1;BadCount=1;if ~exist('ListOfFiles'); ListOfFiles={a};end
 for AddPathAndDir=1:1%% add to pathc
 % add libraries of New PC
@@ -23,7 +23,7 @@ end; clear AddPathAndDir
 CountGood=0;
 CountBad=0;
 for i=1:length(ListOfFiles)
-    try
+    % try
 clear EphysObj
 for GetFileName=1:1
 % the following code is for running a lot of files one by one
@@ -169,20 +169,9 @@ if EphysObj.Variables.Tagged; IsTagged='Tagged';else; IsTagged='NotTagged';end
 if EphysObj.Variables.UseAnova; IsTest='ANOVA';else; IsTest='kruskalwallis';end
 if length(EphysObj.Variables.Condition)>4 ; IsCondition='JELLY' ; else IsCondition='CHOW'; end
 if EphysObj.Variables.UseAnova; IsTest='ANOVA';else; IsTest='kruskalwallis';end
+save(['D:\SummaryMay2024\',EphysObj.Variables.DietType,' ',IsCondition,'\',IsTagged,'\',IsTest,'\',EphysObj.Variables.UnitName,'_Obj.mat'],'Obj2Save', 'EphysObj');
 
-
-save(['D:\SummaryMay2024\',EphysObj.Variables.DietType,' ',IsCondition,'\',IsTagged,'\',IsTest,'\',EphysObj.Variables.UnitName,'_Obj.mat'],'Obj2Save');
-else
-save(['D:\SummaryMay2024\Tagged\kruskalwallis\',EphysObj.Variables.UnitName,'_Obj.mat'],'Obj2Save');
-end
-else
-    if EphysObj.Variables.UseAnova
-save(['D:\SummaryMay2024\NotTagged\ANOVA\',EphysObj.Variables.UnitName,'_Obj.mat'],'Obj2Save');
-else
-save(['D:\SummaryMay2024\NotTagged\kruskalwallis\',EphysObj.Variables.UnitName,'_Obj.mat'],'Obj2Save');
-end
-end
-clearvars -EXCEPT CountGood CountBad Obj2Save BadCount CollectBadFiles EphysObj FileStructure ListOfFiles CollectAllData NameList Count AllEphysObjs EphysObj CollectAllRsquared CollectAllRsquaredNoZeros  DataBase  LaserCollect LickometerCollect
+clearvars -EXCEPT  CountGood CountBad Obj2Save BadCount CollectBadFiles EphysObj FileStructure ListOfFiles CollectAllData NameList Count AllEphysObjs EphysObj CollectAllRsquared CollectAllRsquaredNoZeros  DataBase  LaserCollect LickometerCollect
 
 
 
@@ -235,11 +224,12 @@ clearvars -EXCEPT CountGood CountBad Obj2Save BadCount CollectBadFiles EphysObj 
 % BadCount=BadCount+1;
 % clearvars -EXCEPT BadCount CollectBadFiles  ListOfFiles Count i  
 %     end
-continue
+
     
-    catch
-    CountBad=CountBad+1;
-    continue
-    end
+    % catch
+    % CountBad=CountBad+1;
+    % continue
+    % end
+    
 end
 % clear all

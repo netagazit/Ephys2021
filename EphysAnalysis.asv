@@ -1015,7 +1015,7 @@ EphysObj.Video.DiffFeedingBaselineOnset=mean(Feeding-Baseline);
 EphysObj.Video.CollectFrequencyOffset=CollectFrequency;
 FeedingOffset=mean(EphysObj.Video.CollectFrequencyOffset(:,find(BinCenters>-5 &BinCenters<-0)),2);
 After=mean(EphysObj.Video.CollectFrequencyOffset(:,find(BinCenters>1 &BinCenters<6)),2);
-EphysObj.Video.DiffFeedingBaselineOffset=mean(FeedingOffset-After); 
+EphysObj.Video.DiffFeedingBaselineOffset=mean(After-FeedingOffset); 
 [EphysObj.Video.Wilx_p_Offset,~,~] = ranksum(FeedingOffset,After);
     end
 end
@@ -1026,15 +1026,13 @@ scatter(ones(length(Baseline)),Baseline,"k"); hold on
 scatter(2*ones(length(Feeding)),Feeding,'r'); 
 xlim([0 3]);
   set(gca,'XTickLabel',{' ','Baseline','Onset',' '})
-  text(1,max([Feeding;Baseline])+1,['p=',num2str(EphysObj.Video.Wilx_p_Onset)])
-    text(1,max([Feeding;Baseline])+2,['diff=',num2str(EphysObj.Video.DiffFeedingBaselineOnset)])
+
+  text(1,max(Feeding,Baseline)+1,['p=',num2str(EphysObj.Video.Wilx_p_Onset)])
 subplot(1,2,2)
 scatter(ones(length(FeedingOffset)),FeedingOffset,"red"); hold on
 scatter(2*ones(length(After)),After,'k'); 
 xlim([0 3]);
   set(gca,'XTickLabel',{' ','Offset','After',' '})
-  text(1,max([After;FeedingOffset])+1,['p=',num2str(EphysObj.Video.Wilx_p_Offset)])
-    text(1,max([After;FeedingOffset])+2,['diff=',num2str(EphysObj.Video.DiffFeedingBaselineOffset)])
 end
 % EphysObj.Video.BinCenters=BinCenters;
 % [EphysObj.Video.p_onset,tbl,EphysObj.Video.stats_onset] = anova1(EphysObj.Video.CollectFrequencyOnset);
